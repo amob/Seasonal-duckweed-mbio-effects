@@ -18,14 +18,14 @@ bufferX <- function(x,p) {
 	} #finds the range of a vector and adds a proportion to either side, used for plotting
 
 ###read in dataframe for duckweed image data, make useful variables
-mappeddat <- read.csv("~/Seasonal Duckweed Mbio/AlexDuckNewData.csv",header=T)
+mappeddat <- read.csv("~/Seasonal duckweed mbio effects/DuckweedData.csv",header=T)
 mappeddat$colsq <- (mappeddat$column)^2
 mappeddat$numrow <- as.numeric(as.factor(mappeddat$row))
 mappeddat$rowsq <- (mappeddat$numrow)^2
 mappeddat$pergreen <- mappeddat$g/(mappeddat$r + mappeddat$g + mappeddat$b)
 mappeddat$colint <- (1-(mappeddat$mean/255))*100 ##reverse the ImageJ "mean" metric so that it is color intensity out of 100 rather then whiteness out of 255
 mappeddat$aggregation <- mappeddat$area/mappeddat$perim
-alextrt <- read.csv("~/Seasonal Duckweed Mbio/AlexDatTRT.csv",header=T)
+alextrt <- read.csv("~/Seasonal duckweed mbio effects/DuckweedTreatments.csv",header=T)
 old <- sort(unique(alextrt$Micr))
 newm <- c(1,2,3,4,6,7,8,NA,1,2,3,4,5,6,7,8)
 seasonV <- c("Spr","Sum","Sum","Sum","Fall","Fall","Winter", NA, "Spr","Sum","Sum","Sum","Fall","Fall","Fall","Winter")
@@ -44,7 +44,7 @@ alextrt$springmicr <- ifelse(alextrt$season=="Spr","spring","notspring")
  
  
 #read in raw od data from final timepoint, change column names to match contents
-raw_od <- as.data.frame(read_excel("~/Seasonal Duckweed Mbio/Undergrad Plate Data- OBrien_combined.xlsx",sheet=1))
+raw_od <- as.data.frame(read_excel("~/Seasonal duckweed mbio effects/OpticalDensityData.xlsx",sheet=1))
 colnames(raw_od)[1:2] <- c("Plate","Row")
 
 #convert final timepoint OD data into a long format data frame
@@ -74,7 +74,7 @@ datandtrt_wuninoc$od600 <- unlist(oddatsort[,"od600"])
 datandtrt_wuninoc$od450 <- unlist(oddatsort[,"od450"])
 datandtrt_wuninoc$inoc <- ifelse(datandtrt_wuninoc$Micr=="n","NoMicr","PlusMicr")
 datandtrt_wuninoc$urep <- paste(datandtrt_wuninoc$Plant, datandtrt_wuninoc$rep, sep=".")
-write.csv(datandtrt_wuninoc, "~/Seasonal Duckweed Mbio/MappedGrowth_trt_data.csv",row.names=F)
+write.csv(datandtrt_wuninoc, "~/Seasonal duckweed mbio effects/MappedGrowth_trt_data.csv",row.names=F)
 
 #check normality
 shapiro.test(datandtrt_wuninoc$area)
@@ -101,7 +101,7 @@ datandtrt <- datandtrt_wuninoc[datandtrt_wuninoc$Micr!="n",]
 InocMod <- MCMCglmm(sqmm~inoc, rand = ~ Plant + urep ,verbose=F,data=datandtrt_wuninoc,nitt=100000,thin=10,burnin=1000,pr=T)
 inocmean <- tapply(datandtrt_wuninoc$sqmm, datandtrt_wuninoc$inoc,mean)
 inocSE <- tapply(datandtrt_wuninoc$sqmm, datandtrt_wuninoc$inoc,std.error)
-png("~/Seasonal Duckweed Mbio/Area_inoc.png",height=4,width=3, units = "in", res = 1200)
+png("~/Seasonal duckweed mbio effects/Area_inoc.png",height=4,width=3, units = "in", res = 1200)
 par(mar=c(6,4,1,1))
 plot(inocmean~c(1,2),pch=21,cex=3,xlim=c(0,3),xaxt="n", ylab="",xlab="",
 	ylim=bufferX(range(c(inocmean-inocSE,inocmean+inocSE)),0.1), bg=rgb(0.8,0.8,0.8))
@@ -114,7 +114,7 @@ dev.off()
 InocModCol <- MCMCglmm(colint~inoc, rand = ~ Plant + urep ,verbose=F,data=datandtrt_wuninoc,nitt=100000,thin=10,burnin=1000,pr=T)
 inocmeanCol <- tapply(datandtrt_wuninoc$colint, datandtrt_wuninoc$inoc,mean,na.rm=T)
 inocSECol <- tapply(datandtrt_wuninoc$colint, datandtrt_wuninoc$inoc,std.error)
-png("~/Seasonal Duckweed Mbio/Col_inoc.png",height=4,width=3, units = "in", res = 1200)
+png("~/Seasonal duckweed mbio effects/Col_inoc.png",height=4,width=3, units = "in", res = 1200)
 par(mar=c(6,4,1,1))
 plot(inocmeanCol~c(1,2),pch=21,cex=3,xlim=c(0,3),xaxt="n", ylab="",xlab="",
 	ylim=bufferX(range(c(inocmeanCol-inocSECol,inocmeanCol+inocSECol)),0.1), bg=rgb(0.8,0.8,0.8))
@@ -127,7 +127,7 @@ dev.off()
 InocModGrn <- MCMCglmm(pergreen~inoc, rand = ~ Plant + urep ,verbose=F,data=datandtrt_wuninoc,nitt=100000,thin=10,burnin=1000,pr=T)
 inocmeanGrn <- 100*tapply(datandtrt_wuninoc$pergreen, datandtrt_wuninoc$inoc,mean,na.rm=T)
 inocSEGrn <- 100*tapply(datandtrt_wuninoc$pergreen, datandtrt_wuninoc$inoc,std.error)
-png("~/Seasonal Duckweed Mbio/Grn_inoc.png",height=4,width=3, units = "in", res = 1200)
+png("~/Seasonal duckweed mbio effects/Grn_inoc.png",height=4,width=3, units = "in", res = 1200)
 par(mar=c(6,4,1,1))
 plot(inocmeanGrn~c(1,2),pch=21,cex=3,xlim=c(0,3),xaxt="n", ylab="",xlab="",
 	ylim=bufferX(range(c(inocmeanGrn-inocSEGrn,inocmeanGrn+inocSEGrn)),0.1), bg=rgb(0.8,0.8,0.8))
@@ -140,7 +140,7 @@ dev.off()
 InocModAgg <- MCMCglmm(aggregation~inoc, rand = ~ Plant + urep ,verbose=F,data=datandtrt_wuninoc,nitt=100000,thin=10,burnin=1000,pr=T)
 inocmeanAgg <- tapply(datandtrt_wuninoc$aggregation, datandtrt_wuninoc$inoc,mean,na.rm=T)
 inocSEAgg <- tapply(datandtrt_wuninoc$aggregation, datandtrt_wuninoc$inoc,std.error)
-png("~/Seasonal Duckweed Mbio/Agg_inoc.png",height=4,width=3, units = "in", res = 1200)
+png("~/Seasonal duckweed mbio effects/Agg_inoc.png",height=4,width=3, units = "in", res = 1200)
 par(mar=c(6,4,1,1))
 plot(inocmeanAgg~c(1,2),pch=21,cex=3,xlim=c(0,3),xaxt="n", ylab="",xlab="",
 	ylim=bufferX(range(c(inocmeanAgg-inocSEAgg,inocmeanAgg+inocSEAgg)),0.1), bg=rgb(0.8,0.8,0.8))
@@ -153,7 +153,7 @@ dev.off()
 InocModOD450 <- MCMCglmm(lnod450~inoc, rand = ~ Plant + urep ,verbose=F,data=datandtrt_wuninoc,nitt=100000,thin=10,burnin=1000,pr=T)
 inocmeanod450 <- tapply(datandtrt_wuninoc$lnod450, datandtrt_wuninoc$inoc,mean,na.rm=T)
 inocSEod450 <- tapply(datandtrt_wuninoc$lnod450, datandtrt_wuninoc$inoc,std.error)
-png("~/Seasonal Duckweed Mbio/od450_inoc.png",height=4,width=3, units = "in", res = 1200)
+png("~/Seasonal duckweed mbio effects/od450_inoc.png",height=4,width=3, units = "in", res = 1200)
 par(mar=c(6,4,1,1))
 plot(inocmeanod450~c(1,2),pch=21,cex=3,xlim=c(0,3),xaxt="n", ylab="",xlab="",
 	ylim=bufferX(range(c(inocmeanod450-inocSEod450,inocmeanod450+inocSEod450)),0.1), bg=rgb(0.8,0.8,0.8))
@@ -166,7 +166,7 @@ dev.off()
 InocModOD600 <- MCMCglmm(lnod600~inoc, rand = ~ Plant + urep ,verbose=F,data=datandtrt_wuninoc,nitt=100000,thin=10,burnin=1000,pr=T)
 inocmeanod600 <- tapply(datandtrt_wuninoc$lnod600, datandtrt_wuninoc$inoc,mean,na.rm=T)
 inocSEod600 <- tapply(datandtrt_wuninoc$lnod600, datandtrt_wuninoc$inoc,std.error)
-png("~/Seasonal Duckweed Mbio/od600_inoc.png",height=4,width=3, units = "in", res = 1200)
+png("~/Seasonal duckweed mbio effects/od600_inoc.png",height=4,width=3, units = "in", res = 1200)
 par(mar=c(6,4,1,1))
 plot(inocmeanod600~c(1,2),pch=21,cex=3,xlim=c(0,3),xaxt="n", ylab="",xlab="",
 	ylim=bufferX(range(c(inocmeanod600-inocSEod600,inocmeanod600+inocSEod600)),0.1), bg=rgb(0.8,0.8,0.8))
@@ -187,7 +187,7 @@ SummMicrod450 <- MCMCglmm(lnod450~summicr, rand = ~ Plant +urep ,verbose=F,data=
 SummMicrod600 <- MCMCglmm(lnod600~summicr, rand = ~ Plant +urep ,verbose=F,data=datandtrt,nitt=100000,thin=10,burnin=1000,pr=T)
 summean <- tapply(datandtrt$sqmm, datandtrt$summicr,mean)
 sumSE <- tapply(datandtrt$sqmm, datandtrt$summicr,std.error)
-png("~/Seasonal Duckweed Mbio/Area_sum.png",height=4,width=3, units = "in", res = 1200)
+png("~/Seasonal duckweed mbio effects/Area_sum.png",height=4,width=3, units = "in", res = 1200)
 par(mar=c(6,4,1,1))
 plot(summean~c(1,2),pch=21,cex=3,xlim=c(0,3),xaxt="n", ylab="",xlab="",
 	ylim=bufferX(range(c(summean-sumSE,summean+sumSE)),0.1), bg=rgb(0.8,0.8,0.8))
@@ -200,7 +200,7 @@ dev.off()
 #
 summeanGreen <- 100*tapply(datandtrt$pergreen, datandtrt$summicr,mean,na.rm=T)
 sumSEGreen <- 100*tapply(datandtrt$pergreen, datandtrt$summicr,std.error)
-png("~/Seasonal Duckweed Mbio/Green_sum.png",height=4,width=3, units = "in", res = 1200)
+png("~/Seasonal duckweed mbio effects/Green_sum.png",height=4,width=3, units = "in", res = 1200)
 par(mar=c(6,4,1,1))
 plot(summeanGreen~c(1,2),pch=21,cex=3,xlim=c(0,3),xaxt="n", ylab="",xlab="",
 	ylim=bufferX(range(c(summeanGreen-sumSEGreen,summeanGreen+sumSEGreen)),0.1), bg=rgb(0.8,0.8,0.8))
@@ -213,7 +213,7 @@ dev.off()
 #
 summeanColor <- tapply(datandtrt$colint, datandtrt$summicr,mean,na.rm=T)
 sumSEColor <- tapply(datandtrt$colint, datandtrt$summicr,std.error)
-png("~/Seasonal Duckweed Mbio/ColInt_sum.png",height=4,width=3, units = "in", res = 1200)
+png("~/Seasonal duckweed mbio effects/ColInt_sum.png",height=4,width=3, units = "in", res = 1200)
 par(mar=c(6,4,1,1))
 plot(summeanColor~c(1,2),pch=21,cex=3,xlim=c(0,3),xaxt="n", ylab="",xlab="",
 	ylim=bufferX(range(c(summeanColor-sumSEColor,summeanColor+sumSEColor)),0.1), bg=rgb(0.8,0.8,0.8))
@@ -226,7 +226,7 @@ dev.off()
 #
 summeanagg <- tapply(datandtrt$aggregation, datandtrt$summicr,mean,na.rm=T)
 sumSEagg <- tapply(datandtrt$aggregation, datandtrt$summicr,std.error)
-png("~/Seasonal Duckweed Mbio/Aggregation_sum.png",height=4,width=3, units = "in", res = 1200)
+png("~/Seasonal duckweed mbio effects/Aggregation_sum.png",height=4,width=3, units = "in", res = 1200)
 par(mar=c(6,4,1,1))
 plot(summeanagg~c(1,2),pch=21,cex=3,xlim=c(0,3),xaxt="n", ylab="",xlab="",
 	ylim=bufferX(range(c(summeanagg-sumSEagg,summeanagg+sumSEagg)),0.1), bg=rgb(0.8,0.8,0.8))
@@ -239,7 +239,7 @@ dev.off()
 #
 summeanod450 <- tapply(datandtrt$lnod450, datandtrt$summicr,mean,na.rm=T)
 sumSEod450 <- tapply(datandtrt$lnod450, datandtrt$summicr,std.error)
-png("~/Seasonal Duckweed Mbio/od450_sum.png",height=4,width=3, units = "in", res = 1200)
+png("~/Seasonal duckweed mbio effects/od450_sum.png",height=4,width=3, units = "in", res = 1200)
 par(mar=c(6,4,1,1))
 plot(summeanod450~c(1,2),pch=21,cex=3,xlim=c(0,3),xaxt="n", ylab="",xlab="",
 	ylim=bufferX(range(c(summeanod450-sumSEod450,summeanod450+sumSEod450)),0.1), bg=rgb(0.8,0.8,0.8))
@@ -252,7 +252,7 @@ dev.off()
 #
 summeanod600 <- tapply(datandtrt$lnod600, datandtrt$summicr,mean,na.rm=T)
 sumSEod600 <- tapply(datandtrt$lnod600, datandtrt$summicr,std.error)
-png("~/Seasonal Duckweed Mbio/od600_sum.png",height=4,width=3, units = "in", res = 1200)
+png("~/Seasonal duckweed mbio effects/od600_sum.png",height=4,width=3, units = "in", res = 1200)
 par(mar=c(6,4,1,1))
 plot(summeanod600~c(1,2),pch=21,cex=3,xlim=c(0,3),xaxt="n", ylab="",xlab="",
 	ylim=bufferX(range(c(summeanod600-sumSEod600,summeanod600+sumSEod600)),0.1), bg=rgb(0.8,0.8,0.8))
@@ -275,7 +275,7 @@ RespNames <- c("Area", "Aggregation" , "%Greenness" , "%Color Intensity" ,"ln(OD
 vals <- seq(from = 0, to = 1, length.out=ncol(resp_cors))
 xvals <- matrix(rep(vals,times=6),nrow=6,byrow=T)
 yvals <- matrix(rep(vals,times=6),nrow=6,byrow=F)
-png("~/Seasonal Duckweed Mbio/Correlations.png",height=5,width=5, units = "in", res = 1200)
+png("~/Seasonal duckweed mbio effects/Correlations.png",height=5,width=5, units = "in", res = 1200)
 par(mar=c(7,7,1,1))
 image(resp_cors,zlim=c(-1,1),col=bwr(100),xaxt="n",yaxt="n")
 	text(xvals,yvals,round(resp_cors,digits=1))
@@ -298,7 +298,7 @@ round(ssPlant)
 ssMicr <- 100*sapply(c(1,4,2,3,5,6), function(z) ssbyvar(respdat_micr[,z],datandtrt$Micr) ) - ssPlant
 # ssPlant <- 100*sapply(c(1,4,2,3,5,6), function(z) ssbyvar(respdat[,z],datandtrt_wuninoc$Plant) )
 # ssMicr <- 100*sapply(c(1,4,2,3,5,6), function(z) ssbyvar(respdat[,z],paste(datandtrt_wuninoc$Micr,datandtrt_wuninoc$Plant)) ) - ssPlant
-png("~/Seasonal Duckweed Mbio/VarExplbyTrts_Inoc.png",height=4,width=4, units = "in", res = 1200)
+png("~/Seasonal duckweed mbio effects/VarExplbyTrts_Inoc.png",height=4,width=4, units = "in", res = 1200)
 par(mar=c(7,4,1,1))
 bg <- barplot(rbind(ssPlant,ssMicr)[,c(1,4,2,3,5,6)],ylim=c(0,40),col=c(rgb(0,0,0),rgb(0.75,0.75,0.75)))
 	axis(at=bg, labels=RespNames,side=1,las=2)
@@ -328,7 +328,7 @@ allSEod600 <- tapply(datandtrt_wuninoc$lnod600, paste(datandtrt_wuninoc$Plant,da
 alldates <- c("12 May", "10 Jun", "12 Jul", "9 Aug", "16 Oct", "11 Nov", "18 Dec", "None", "None",
 			   "7 May", "4 June", "8 Jul", "5 Aug", "10 Sep", "13 Oct", "5 Nov", "15 Dec")
 
-png("~/Seasonal Duckweed Mbio/allmeans.png",height=10,width=5, units = "in", res = 1200)
+png("~/Seasonal duckweed mbio effects/allmeans.png",height=10,width=5, units = "in", res = 1200)
 par(mar=c(0,4.5,0,1))
 par(oma=c(5,0,1,0))
 par(mfrow=c(6,1))
